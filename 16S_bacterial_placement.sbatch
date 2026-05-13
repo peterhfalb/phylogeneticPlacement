@@ -51,13 +51,13 @@ RESULTS_DIR="${OUTPUT_DIR}/results"
 ### Load python requirements ###
 module load python3
 
-if [ ! -d "${SCRIPT_DIR}/venv"]; then # check if virtual environment exists, install if not
-    python3 -m venv "${SCRIPT_DIR}/venv"
-    source "${SCRIPT_DIR}/venv/bin/activate"
+if [ ! -d "${OUTPUT_DIR}/venv"]; then # check if virtual environment exists, install if not
+    python3 -m venv "${OUTPUT_DIR}/venv"
+    source "${OUTPUT_DIR}/venv/bin/activate"
     pip install -U pip
     pip install -r scikit-bio>=0.5.7 numpy>=1.19.0 bscampp
 else
-    source "${SCRIPT_DIR}/venv/bin/activate"
+    source "${OUTPUT_DIR}/venv/bin/activate"
 fi
 
 ## Specify input tree files ##
