@@ -44,7 +44,7 @@ SCRIPT_DIR="/users/9/falb0011/packages/phylogeneticPlacement"
 OUTPUT_DIR="/users/9/falb0011/FAB2/Summer2022/phylogeneticPlacement/18S_V4_protist"
 
 # Change to your query 18S sequence file (unaligned fasta)
-QUERY_FASTA="${OUTPUT_DIR}/	FAB2.18S.protist.sequencesQCd.fasta"
+QUERY_FASTA="${OUTPUT_DIR}/FAB2.18S.protist.sequencesQCd.fasta"
 
 # Change to your preferred output file prefix
 OUTPUT_NAME="FAB2_2022_18S_phyloPlacement"
