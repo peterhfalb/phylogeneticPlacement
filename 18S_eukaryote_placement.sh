@@ -35,19 +35,19 @@ set -e
 ##         ↓↓↓↓↓          ##
 
 # Change to your working directory
-cd /users/9/falb0011/YOURWORKINGDIRECTORY
+cd /users/9/falb0011/FAB2/Summer2022/phylogeneticPlacement/18S_V4_protist
 
 # Change to your github script directory (one-time clone)
 SCRIPT_DIR="/users/9/falb0011/packages/phylogeneticPlacement"
 
 # Change to your output directory (ensure directory exists)
-OUTPUT_DIR="/path/to/output/directory"
+OUTPUT_DIR="/users/9/falb0011/FAB2/Summer2022/phylogeneticPlacement/18S_V4_protist"
 
 # Change to your query 18S sequence file (unaligned fasta)
-QUERY_FASTA="${OUTPUT_DIR}/YOUR_18S_QUERY_SEQUENCES.fasta"
+QUERY_FASTA="${OUTPUT_DIR}/	FAB2.18S.protist.sequencesQCd.fasta"
 
 # Change to your preferred output file prefix
-OUTPUT_NAME="nameOfOutputFiles"
+OUTPUT_NAME="FAB2_2022_18S_phyloPlacement"
 
 #############################
 
