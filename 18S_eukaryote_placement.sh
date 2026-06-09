@@ -77,6 +77,7 @@ cmalign --cpu 12 \
     --matchonly \
     --dnaout \
     --outformat Pfam \
+    --mxsize 8096 \
     "$CM_FILE" \
     "$QUERY_FASTA" \
     > "$QUERY_ALIGNED_RAW"
