@@ -20,3 +20,14 @@ sbatch 16S_bacterial_placement.sbatch
 ```
 
 Finally, run the Rscript 16S_bacterial_pruneTree.R locally, to prune the tree to only include your query sequences.
+
+
+## For placement of 18S Protist amplicon sequences:
+
+First create a virtual environment:
+
+```bash
+
+conda create -y -n eukaryotePhyloPlacement -c bioconda -c conda-forge numpy epa-ng infernal gappa
+
+```

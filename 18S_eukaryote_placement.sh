@@ -55,9 +55,12 @@ OUTPUT_NAME="FAB2_2022_18S_phyloPlacement"
 mkdir -p "${OUTPUT_DIR}/results"
 RESULTS_DIR="${OUTPUT_DIR}/results"
 
-### Load modules ###
-module load python3
-module load infernal/1.1.4
+### Load conda and activate environment ###
+# One-time setup (run once before first use):
+#   conda create -y -n eukaryotePhyloPlacement -c bioconda -c conda-forge \
+#       epa-ng infernal gappa numpy hmmer
+module load python3/3.12.4_anaconda2024.06-1_libmamba
+conda activate eukaryotePhyloPlacement
 
 ## Reference tree files (do not change) ##
 REF_TREE_DIR="${SCRIPT_DIR}/refTrees/eukaryote_ssu.lsu_tree"
