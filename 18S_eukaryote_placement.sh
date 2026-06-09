@@ -60,6 +60,7 @@ RESULTS_DIR="${OUTPUT_DIR}/results"
 #   conda create -y -n eukaryotePhyloPlacement -c bioconda -c conda-forge \
 #       epa-ng infernal gappa numpy hmmer
 module load python3/3.12.4_anaconda2024.06-1_libmamba
+conda init bash
 conda activate eukaryotePhyloPlacement
 
 ## Reference tree files (do not change) ##
