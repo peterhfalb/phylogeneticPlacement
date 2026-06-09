@@ -107,6 +107,14 @@ if [ -f "$QUERY_ALIGNED" ]; then
     echo "Skipping padding — padded fasta already exists: $QUERY_ALIGNED"
 else
     echo "Padding SSU alignment with LSU dashes..."
+    # Sanity-check: make sure the reference alignment is a real fasta, not a git-lfs pointer
+    if ! grep -q "^>" "$ALN_FILE" 2>/dev/null; then
+        echo "ERROR: $ALN_FILE does not look like a fasta file."
+        echo "       If this is a git-lfs pointer, run: git lfs pull"
+        echo "First 3 lines of file:"
+        head -3 "$ALN_FILE"
+        exit 1
+    fi
     python3 - <<'EOF'
 import os, sys
 
@@ -114,17 +122,22 @@ ssu_fasta = os.environ["QUERY_ALIGNED_SSU"]
 ref_fasta = os.environ["ALN_FILE"]
 out_fasta = os.environ["QUERY_ALIGNED"]
 
-# Determine reference alignment total column count
+# Determine reference alignment total column count from the first sequence
 ref_len = None
 with open(ref_fasta) as f:
-    seq = ""
+    seq_lines = []
+    in_first_seq = False
     for line in f:
+        line = line.strip()
         if line.startswith(">"):
-            if seq:
-                ref_len = len(seq)
-                break
-        else:
-            seq += line.strip()
+            if in_first_seq:
+                break           # finished first sequence
+            in_first_seq = True
+        elif in_first_seq:
+            seq_lines.append(line)
+    if seq_lines:
+        ref_len = len("".join(seq_lines))
+
 if ref_len is None:
     sys.exit("ERROR: Could not determine reference alignment length")
 print(f"Reference alignment length: {ref_len} columns")
