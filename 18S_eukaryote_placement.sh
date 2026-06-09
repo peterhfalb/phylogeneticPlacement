@@ -67,6 +67,7 @@ conda activate eukaryotePhyloPlacement
 REF_TREE_DIR="${SCRIPT_DIR}/refTrees/eukaryote_ssu.lsu_tree"
 TREE_FILE="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta.contree"
 ALN_FILE="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta"
+TREE_LOG="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta.log"
 CM_FILE="${REF_TREE_DIR}/RF01960.cm"
 
 ## Intermediate and output file names ##
@@ -225,10 +226,11 @@ else
         --tree "$TREE_FILE" \
         --ref-msa "$ALN_FILE" \
         --query "$QUERY_ALIGNED_FILTERED" \
+        --model "$TREE_LOG" \
         --redo \
-        --out-dir "$RESULTS_DIR" \
-        --prefix "$OUTPUT_NAME" \
+        --outdir "$RESULTS_DIR" \
         --threads 16
+    mv "${RESULTS_DIR}/epa_result.jplace" "$JPLACE"
     echo ""
     echo "Placement complete: $JPLACE"
 fi
