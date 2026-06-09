@@ -75,27 +75,38 @@ QUERY_ALIGNED="${RESULTS_DIR}/${OUTPUT_NAME}_aligned_padded.fasta"
 
 
 # Step 1: align queries to RF01960.cm to get the 18S SSU match columns
-echo "Aligning queries to RF01960.cm..."
-cmalign --cpu 12 \
-    --matchonly \
-    --dnaout \
-    --outformat Pfam \
-    --mxsize 8096 \
-    "$CM_FILE" \
-    "$QUERY_FASTA" \
-    > "$QUERY_ALIGNED_RAW"
+if [ -f "$QUERY_ALIGNED_RAW" ]; then
+    echo "Skipping cmalign — pfam file already exists: $QUERY_ALIGNED_RAW"
+else
+    echo "Aligning queries to RF01960.cm..."
+    cmalign --cpu 12 \
+        --matchonly \
+        --dnaout \
+        --outformat Pfam \
+        --mxsize 8096 \
+        "$CM_FILE" \
+        "$QUERY_FASTA" \
+        > "$QUERY_ALIGNED_RAW"
+fi
 
 # Convert pfam to fasta
-echo "Converting pfam alignment to fasta..."
-esl-reformat afa "$QUERY_ALIGNED_RAW" > "$QUERY_ALIGNED_SSU"
+if [ -f "$QUERY_ALIGNED_SSU" ]; then
+    echo "Skipping esl-reformat — SSU fasta already exists: $QUERY_ALIGNED_SSU"
+else
+    echo "Converting pfam alignment to fasta..."
+    esl-reformat afa "$QUERY_ALIGNED_RAW" > "$QUERY_ALIGNED_SSU"
+fi
 
 
 # Step 2: pad SSU alignment with dashes for the LSU (28S) portion.
 # The reference alignment is SSU+LSU concatenated; query sequences only cover SSU.
 # Dashes are appended so the column count matches the reference alignment exactly.
 export QUERY_ALIGNED_SSU ALN_FILE QUERY_ALIGNED
-echo "Padding SSU alignment with LSU dashes..."
-python3 - <<'EOF'
+if [ -f "$QUERY_ALIGNED" ]; then
+    echo "Skipping padding — padded fasta already exists: $QUERY_ALIGNED"
+else
+    echo "Padding SSU alignment with LSU dashes..."
+    python3 - <<'EOF'
 import os, sys
 
 ssu_fasta = os.environ["QUERY_ALIGNED_SSU"]
@@ -145,6 +156,7 @@ with open(out_fasta, "w") as f:
         f.write(f"{name}\n{seq}{dash_pad}\n")
 print(f"Wrote {len(ssu_seqs)} padded sequences to {out_fasta}")
 EOF
+fi
 
 
 # Step 2b: remove sequences that are all gaps in the SSU portion.
@@ -152,8 +164,11 @@ EOF
 # place them and will error.
 QUERY_ALIGNED_FILTERED="${RESULTS_DIR}/${OUTPUT_NAME}_aligned_padded_filtered.fasta"
 export QUERY_ALIGNED QUERY_ALIGNED_FILTERED
-echo "Filtering all-gap sequences..."
-python3 - <<'EOF'
+if [ -f "$QUERY_ALIGNED_FILTERED" ]; then
+    echo "Skipping gap filter — filtered fasta already exists: $QUERY_ALIGNED_FILTERED"
+else
+    echo "Filtering all-gap sequences..."
+    python3 - <<'EOF'
 import os, sys
 input_path  = os.environ["QUERY_ALIGNED"]
 output_path = os.environ["QUERY_ALIGNED_FILTERED"]
@@ -181,30 +196,40 @@ with open(input_path) as fin, open(output_path, "w") as fout:
             skipped += 1
 print(f"Kept {kept} sequences, removed {skipped} all-gap sequences.")
 EOF
+fi
 
 
 # Step 3: place sequences into the reference tree with epa-ng.
 # Query sequences are already aligned (same column count as reference), so
 # epa-ng uses split mode and skips internal hmmer re-alignment.
-echo "Running epa-ng..."
-epa-ng \
-    --tree "$TREE_FILE" \
-    --ref-msa "$ALN_FILE" \
-    --query "$QUERY_ALIGNED_FILTERED" \
-    --redo \
-    --out-dir "$RESULTS_DIR" \
-    --prefix "$OUTPUT_NAME" \
-    --threads 16
-
-echo ""
-echo "Placement complete: ${RESULTS_DIR}/${OUTPUT_NAME}.jplace"
+JPLACE="${RESULTS_DIR}/${OUTPUT_NAME}.jplace"
+if [ -f "$JPLACE" ]; then
+    echo "Skipping epa-ng — jplace already exists: $JPLACE"
+else
+    echo "Running epa-ng..."
+    epa-ng \
+        --tree "$TREE_FILE" \
+        --ref-msa "$ALN_FILE" \
+        --query "$QUERY_ALIGNED_FILTERED" \
+        --redo \
+        --out-dir "$RESULTS_DIR" \
+        --prefix "$OUTPUT_NAME" \
+        --threads 16
+    echo ""
+    echo "Placement complete: $JPLACE"
+fi
 
 
 # Step 4: graft query placements onto the reference tree to produce a newick
-echo "Running gappa to construct a grafted tree..."
-gappa examine graft \
-    --jplace-path "${RESULTS_DIR}/${OUTPUT_NAME}.jplace" \
-    --fully-resolve \
-    --out-dir "${RESULTS_DIR}/"
+NEWICK="${RESULTS_DIR}/${OUTPUT_NAME}.newick"
+if [ -f "$NEWICK" ]; then
+    echo "Skipping gappa — newick already exists: $NEWICK"
+else
+    echo "Running gappa to construct a grafted tree..."
+    gappa examine graft \
+        --jplace-path "$JPLACE" \
+        --fully-resolve \
+        --out-dir "${RESULTS_DIR}/"
+fi
 
-echo "Finished! Output tree: ${RESULTS_DIR}/${OUTPUT_NAME}.newick"
+echo "Finished! Output tree: $NEWICK"
