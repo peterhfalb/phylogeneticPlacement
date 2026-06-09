@@ -28,6 +28,6 @@ First create a virtual environment:
 
 ```bash
 
-conda create -y -n eukaryotePhyloPlacement -c bioconda -c conda-forge numpy epa-ng infernal gappa
+conda create -y -n eukaryotePhyloPlacement -c bioconda -c conda-forge numpy epa-ng infernal gappa hmmer
 
 ```
