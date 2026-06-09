@@ -67,7 +67,6 @@ conda activate eukaryotePhyloPlacement
 REF_TREE_DIR="${SCRIPT_DIR}/refTrees/eukaryote_ssu.lsu_tree"
 TREE_FILE="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta.contree"
 ALN_FILE="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta"
-TREE_LOG="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta.log"
 CM_FILE="${REF_TREE_DIR}/RF01960.cm"
 
 ## Intermediate and output file names ##
@@ -221,12 +220,34 @@ JPLACE="${RESULTS_DIR}/${OUTPUT_NAME}.jplace"
 if [ -f "$JPLACE" ]; then
     echo "Skipping epa-ng — jplace already exists: $JPLACE"
 else
+    # Extract the final optimized GTR rates from the IQ-TREE log and build
+    # the epa-ng model string (GTR{rates}+FC+G4).
+    # +FC uses empirical frequencies counted from the reference alignment,
+    # matching the +F flag used when the tree was built.
+    export TREE_LOG="${REF_TREE_DIR}/3dom-org.18s28s.cmalign.f.fasta.log"
+    MODEL_STRING=$(python3 <<'PYEOF'
+import os, re
+with open(os.environ["TREE_LOG"]) as f:
+    content = f.read()
+matches = re.findall(
+    r'Rate parameters:\s+A-C:\s+([\d.]+)\s+A-G:\s+([\d.]+)\s+A-T:\s+([\d.]+)'
+    r'\s+C-G:\s+([\d.]+)\s+C-T:\s+([\d.]+)\s+G-T:\s+([\d.]+)',
+    content
+)
+if not matches:
+    raise SystemExit("ERROR: Could not parse GTR rates from IQ-TREE log")
+ac, ag, at, cg, ct, gt = matches[-1]  # last entry = final optimized values
+print(f"GTR{{{ac}/{ag}/{at}/{cg}/{ct}/{gt}}}+FC+G4")
+PYEOF
+    )
+    echo "Using model: $MODEL_STRING"
+
     echo "Running epa-ng..."
     epa-ng \
         --tree "$TREE_FILE" \
         --ref-msa "$ALN_FILE" \
         --query "$QUERY_ALIGNED_FILTERED" \
-        --model "$TREE_LOG" \
+        --model "$MODEL_STRING" \
         --redo \
         --outdir "$RESULTS_DIR" \
         --threads 16
